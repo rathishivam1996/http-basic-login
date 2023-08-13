@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@ToString
 @Entity
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "unique_username", columnNames = "username"))
 public class JpaUser {
@@ -94,26 +93,33 @@ public class JpaUser {
     }
 
     @Override
+    public String toString() {
+        return "JpaUser{" +
+                "uuid='" + uuid + '\'' +
+                ", optLock=" + optLock +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", isAccountNonExpired=" + isAccountNonExpired +
+                ", isAccountNonLocked=" + isAccountNonLocked +
+                ", isCredentialsNonExpired=" + isCredentialsNonExpired +
+                ", isEnabled=" + isEnabled +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+//                ", roles=" + (roles == null ? "null" : roles) +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JpaUser user = (JpaUser) o;
-        return uuid.equals(user.uuid)
-                && username.equals(user.username)
-                && Objects.equals(password, user.password)
-                && optLock == user.optLock
-                && isEnabled == user.isEnabled
-                && isAccountNonExpired == user.isAccountNonExpired
-                && isAccountNonLocked == user.isAccountNonLocked
-                && isCredentialsNonExpired == user.isCredentialsNonExpired
-                && Objects.equals(createdAt, user.createdAt)
-                && Objects.equals(updatedAt, user.updatedAt)
-                && Objects.equals(roles, user.roles);
+        return uuid.equals(user.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, optLock, username, password, isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired, isEnabled, createdAt, updatedAt, roles);
+        return Objects.hash(uuid);
     }
 
     public static class Builder {

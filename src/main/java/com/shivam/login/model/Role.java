@@ -29,7 +29,7 @@ public class Role implements GrantedAuthority {
     private final String uuid;
 
     @Getter
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "roles_authorities", joinColumns = @JoinColumn(name = "role_uuid", referencedColumnName = "uuid"), inverseJoinColumns = @JoinColumn(name = "authority_uuid", referencedColumnName = "uuid"))
     @Column(name = "allowedAuthorities", nullable = true)
     private final Set<Authority> allowedAuthorities;

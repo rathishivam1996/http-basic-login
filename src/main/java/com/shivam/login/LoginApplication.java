@@ -82,15 +82,19 @@ public class LoginApplication {
         Authority authorityCreate = new Authority(AuthorityEnum.AUTH_CREATE);
         Authority authorityGrant = new Authority(AuthorityEnum.AUTH_GRANT);
         roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin, authorityCreate, authorityGrant));
+        System.out.println("role: " + roleAdmin);
 
         Role roleArchitect = new Role(RoleEnum.ARCHITECT);
         Authority authorityAdmin1 = new Authority(AuthorityEnum.AUTH_ADMIN);
         Authority authorityCreate1 = new Authority(AuthorityEnum.AUTH_CREATE);
         roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin1, authorityCreate1));
+        System.out.println("role: " + roleArchitect);
 
         JpaUser user = new JpaUser.Builder("user1", "Password").roles(new HashSet<>(List.of(roleAdmin, roleArchitect)))
                 .build();
         userService.saveUser(user);
         Optional<JpaUser> found = userService.findByUsername("user1");
+
+        System.out.println("found user: " + user);
     }
 }
