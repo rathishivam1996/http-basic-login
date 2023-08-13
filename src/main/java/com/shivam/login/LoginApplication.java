@@ -93,8 +93,21 @@ public class LoginApplication {
         JpaUser user = new JpaUser.Builder("user1", "Password").roles(new HashSet<>(List.of(roleAdmin, roleArchitect)))
                 .build();
         userService.saveUser(user);
-        Optional<JpaUser> found = userService.findByUsername("user1");
+        List<JpaUser> found = userService.findByUsernameLike("user1");
 
         System.out.println("found user: " + user);
+
+        JpaUser user2 = new JpaUser.Builder("new username", "new password").build();
+
+        JpaUser updatedUser = userService.updateUserById(user.getUuid(), user2);
+
+        log.info("updated user: {}", user2);
+
+        List<JpaUser> users = userService.findAll();
+
+        log.info("all users: {}", users);
+
     }
+
+
 }
