@@ -2,7 +2,10 @@ server:
   port: "8080"
 
 spring:
-  # Security config 
+  profiles:
+    active: dev
+
+  # Security config
   security:
     oauth2:
       client:
@@ -22,7 +25,7 @@ spring:
     generate-unique-name: 'false'
     name: login
     url: jdbc:h2:mem:login
-  # spring.data.jpa config. 
+  # spring.data.jpa config.
   h2:
     console:
       enabled: true

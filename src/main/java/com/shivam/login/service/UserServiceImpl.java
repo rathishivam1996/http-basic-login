@@ -57,12 +57,8 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public List<JpaUser> findByUsernameLike(String username) {
-        log.info("find by usernameLike: " + "%" + username + "%");
         Specification<JpaUser> usernameLikeSpec = GenericSpecification.attributeContains("username", username);
-        List<JpaUser> found = userRepository.findAll(usernameLikeSpec);
-        log.info("found: {}", found);
-
-        return found;
+        return userRepository.findAll(usernameLikeSpec);
     }
 
     @Override

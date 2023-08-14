@@ -1,0 +1,11 @@
+spring:
+  # datasource config.
+  datasource:
+    username: devUser
+    password: devPass
+    name: dev
+    url: jdbc:h2:mem:dev
+
+  jpa:
+    hibernate:
+      ddl-auto: create

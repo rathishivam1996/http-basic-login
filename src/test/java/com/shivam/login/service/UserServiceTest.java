@@ -49,7 +49,6 @@ public class UserServiceTest {
     @Test
     public void givenJpaUser_whenSaveJpaUser_thenReturnJpaUser() {
         // given - precondition or setup
-        given(repository.findById(user.getUuid())).willReturn(Optional.empty());
         given(repository.save(user)).willReturn(user);
 
         // when - action or the behavior that we are going test
@@ -63,13 +62,10 @@ public class UserServiceTest {
     @Test
     public void givenExistingUsername_whenSave_thenThrowException() {
         // setup
-        given(repository.save(user)).willReturn(user);
         given(repository.save(user)).willThrow(DataIntegrityViolationException.class);
 
         // action
-        assertThatThrownBy(() -> {
-            service.saveUser(user);
-        }).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> service.saveUser(user)).isInstanceOf(DataIntegrityViolationException.class);
 
         // verify
         verify(repository, times(1)).save(Mockito.any(JpaUser.class));
@@ -87,6 +83,20 @@ public class UserServiceTest {
         }).isInstanceOf(DataIntegrityViolationException.class);
 
         verify(repository, times(1)).save(noUsernameUser);
+    }
+
+    @Test
+    public void givenNullUser_whenSaveUser_thenNoOp() {
+        // given
+        JpaUser nullUser = null;
+        given(repository.save(nullUser)).willReturn(nullUser);
+
+        // when
+        JpaUser savedUser = service.saveUser(nullUser);
+
+        // Then
+        verify(repository).save(nullUser);
+        assertThat(savedUser).isNull();
     }
 
     @DisplayName("UserService save all")

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.shivam.login.service.JpaUserDetailsService;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -41,6 +42,12 @@ public class SecurityConfig {
 //		return http.build();
 //	}
 
+    private static final AntPathRequestMatcher[] WHITE_LIST_URLS = {
+            new AntPathRequestMatcher("/register"),
+            new AntPathRequestMatcher("/api/v1/getUsers"),
+            new AntPathRequestMatcher("/h2-console/**")
+    };
+
     @Bean
     public UserDetailsService userDetailsService() {
         return new JpaUserDetailsService();
@@ -53,7 +60,7 @@ public class SecurityConfig {
 
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/h2-console/**");
+        return (web) -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
     }
 
     @Bean
