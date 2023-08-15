@@ -1,19 +1,11 @@
 package com.shivam.login;
 
-import com.shivam.login.model.Authority;
 import com.shivam.login.model.JpaUser;
-import com.shivam.login.model.Role;
-import com.shivam.login.model.constant.AuthorityEnum;
-import com.shivam.login.model.constant.RoleEnum;
 import com.shivam.login.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 
 @SpringBootApplication
 @Slf4j
@@ -77,36 +69,55 @@ public class LoginApplication {
 
         IUserService userService = context.getBean(IUserService.class);
 
-        Role roleAdmin = new Role(RoleEnum.ADMIN);
-        Authority authorityAdmin = new Authority(AuthorityEnum.AUTH_ADMIN);
-        Authority authorityCreate = new Authority(AuthorityEnum.AUTH_CREATE);
-        Authority authorityGrant = new Authority(AuthorityEnum.AUTH_GRANT);
-        roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin, authorityCreate, authorityGrant));
-        System.out.println("role: " + roleAdmin);
+//        Role roleAdmin = new Role(RoleEnum.ADMIN);
+//        Authority authorityAdmin = new Authority(AuthorityEnum.AUTH_ADMIN);
+//        Authority authorityCreate = new Authority(AuthorityEnum.AUTH_CREATE);
+//        Authority authorityGrant = new Authority(AuthorityEnum.AUTH_GRANT);
+//        roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin, authorityCreate, authorityGrant));
+//        System.out.println("role: " + roleAdmin);
+//
+//        Role roleArchitect = new Role(RoleEnum.ARCHITECT);
+//        Authority authorityAdmin1 = new Authority(AuthorityEnum.AUTH_ADMIN);
+//        Authority authorityCreate1 = new Authority(AuthorityEnum.AUTH_CREATE);
+//        roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin1, authorityCreate1));
+//        System.out.println("role: " + roleArchitect);
+//
+//        JpaUser user = new JpaUser.Builder("user1", "Password").roles(new HashSet<>(List.of(roleAdmin, roleArchitect)))
+//                .build();
+//        userService.saveUser(user);
+//        List<JpaUser> found = userService.findByUsernameLike("user1");
+//
+//        System.out.println("found user: " + user);
+//
+//        JpaUser user2 = new JpaUser.Builder("new username", "new password").build();
+//
+//        JpaUser updatedUser = userService.updateUserById(user.getUuid(), user2);
+//
+//        log.info("updated user: {}", user2);
+//
+//        List<JpaUser> users = userService.findAll();
+//
+//        log.info("all users: {}", users);
 
-        Role roleArchitect = new Role(RoleEnum.ARCHITECT);
-        Authority authorityAdmin1 = new Authority(AuthorityEnum.AUTH_ADMIN);
-        Authority authorityCreate1 = new Authority(AuthorityEnum.AUTH_CREATE);
-        roleAdmin.getAllowedAuthorities().addAll(List.of(authorityAdmin1, authorityCreate1));
-        System.out.println("role: " + roleArchitect);
+        JpaUser user1 = new JpaUser.Builder("user1", "pass").build();
+        JpaUser user2 = new JpaUser.Builder("user2", "pass").build();
 
-        JpaUser user = new JpaUser.Builder("user1", "Password").roles(new HashSet<>(List.of(roleAdmin, roleArchitect)))
-                .build();
-        userService.saveUser(user);
-        List<JpaUser> found = userService.findByUsernameLike("user1");
+        System.out.println("saved user: " + userService.saveUser(user1));
+        System.out.println("saved user: " + userService.saveUser(user2));
 
-        System.out.println("found user: " + user);
+        System.out.println("find user1 by email: " + userService.findByEmail("user1"));
+        System.out.println("find user1 by uuid: " + userService.findById(user1.getUuid()));
 
-        JpaUser user2 = new JpaUser.Builder("new username", "new password").build();
+        System.out.println("update user1 pass by uuid: ");
+        userService.updatePasswordById(user1.getUuid(), "passssssssssssss");
+        System.out.println("update user2 pass by uuid: ");
+        userService.updatePasswordById(user2.getUuid(), "xxxxxxxxxxxxxxxx");
 
-        JpaUser updatedUser = userService.updateUserById(user.getUuid(), user2);
+        System.out.println("find updated user1 by uuid: " + userService.findById(user1.getUuid()));
+        System.out.println("find updated user2 by uuid: " + userService.findById(user2.getUuid()));
 
-        log.info("updated user: {}", user2);
-
-        List<JpaUser> users = userService.findAll();
-
-        log.info("all users: {}", users);
-
+        System.out.println("update user1 pass by uuid: ");
+        userService.updatePasswordById(user1.getUuid(), "aaaaaaaaaaaaaaa");
     }
 
 

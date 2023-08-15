@@ -1,10 +1,7 @@
 package com.shivam.login.model;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
@@ -15,22 +12,20 @@ import java.util.Set;
 import java.util.UUID;
 
 @Getter
-@Setter
 @Entity
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "unique_username", columnNames = "username"))
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
 public class JpaUser {
-    @Setter(AccessLevel.NONE)
+    // Non-nullable fields
     @Id
-    @Column(name = "uuid")
-    private String uuid;
+    @Column(name = "uuid", nullable = false)
+    private final String uuid;
 
-    @Setter(AccessLevel.NONE)
     @Version
     @Column(name = "optLock", columnDefinition = "integer DEFAULT 0", nullable = false)
     private int optLock;
 
-    @Column(name = "username", unique = true, nullable = false)
-    private String username;
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -53,7 +48,14 @@ public class JpaUser {
     @Column(name = "updatedAt", nullable = false)
     private Timestamp updatedAt = Timestamp.from(Instant.now());
 
-    @Column(name = "roles", nullable = true)
+    @Column(name = "lastLogin", nullable = false)
+    private Timestamp lastLogin = Timestamp.from(Instant.now());
+
+    @Column(name = "numLoginAttempts", nullable = false)
+    private int numLoginAttempts = 0;
+
+    // Nullable fields
+    @Column(name = "roles")
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_uuid", referencedColumnName = "uuid"), inverseJoinColumns = @JoinColumn(name = "role_uuid", referencedColumnName = "uuid"))
     private final Set<Role> roles = new HashSet<>();
@@ -64,28 +66,23 @@ public class JpaUser {
     }
 
     public JpaUser(Builder builder) {
-        this.uuid = UUID.randomUUID().toString();
-        this.username = builder.username;
+        this.uuid = builder.uuid != null ? builder.uuid : UUID.randomUUID().toString();
+        this.email = builder.email;
         this.password = builder.password;
+        this.optLock = builder.optLock;
         this.isEnabled = builder.isEnabled;
         this.isCredentialsNonExpired = builder.isCredentialsNonExpired;
         this.isAccountNonExpired = builder.isAccountNonExpired;
         this.isAccountNonLocked = builder.isAccountNonLocked;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
+        this.lastLogin = builder.lastLogin;
+        this.numLoginAttempts = builder.numLoginAttempts;
         this.roles.addAll(builder.roles);
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = Timestamp.from(createdAt);
     }
 
     public Instant getCreatedAt() {
         return this.createdAt.toInstant();
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = Timestamp.from(updatedAt);
     }
 
     public Instant getUpdatedAt() {
@@ -97,7 +94,7 @@ public class JpaUser {
         return "JpaUser{" +
                 "uuid='" + uuid + '\'' +
                 ", optLock=" + optLock +
-                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", isAccountNonExpired=" + isAccountNonExpired +
                 ", isAccountNonLocked=" + isAccountNonLocked +
@@ -105,6 +102,8 @@ public class JpaUser {
                 ", isEnabled=" + isEnabled +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", lastLogin=" + lastLogin +
+                ", numLoginAttempts=" + numLoginAttempts +
 //                ", roles=" + (roles == null ? "null" : roles) +
                 '}';
     }
@@ -123,9 +122,13 @@ public class JpaUser {
     }
 
     public static class Builder {
+        private String uuid;
         // required
-        private final String username;
-        private final String password;
+        private String email;
+        private String password;
+
+        private int optLock = 0;
+        // default values
         private boolean isAccountNonExpired = true;
         private boolean isAccountNonLocked = true;
         private boolean isCredentialsNonExpired = true;
@@ -133,12 +136,36 @@ public class JpaUser {
         private Timestamp createdAt = Timestamp.from(Instant.now());
         private Timestamp updatedAt = Timestamp.from(Instant.now());
 
+        private Timestamp lastLogin = Timestamp.from(Instant.now());
+
+        private int numLoginAttempts = 0;
+
         // optional
         private final Set<Role> roles = new HashSet<>();
 
-        public Builder(String username, String password) {
-            this.username = username;
+        public Builder(JpaUser jpaUser) {
+            this.uuid = jpaUser.uuid;
+            this.email = jpaUser.email;
+            this.optLock = jpaUser.optLock;
+            this.password = jpaUser.password;
+            this.isEnabled = jpaUser.isEnabled;
+            this.isAccountNonExpired = jpaUser.isAccountNonExpired;
+            this.isAccountNonLocked = jpaUser.isAccountNonLocked;
+            this.isCredentialsNonExpired = jpaUser.isCredentialsNonExpired;
+            this.createdAt = jpaUser.createdAt;
+            this.updatedAt = jpaUser.updatedAt;
+            this.lastLogin = jpaUser.lastLogin;
+            this.numLoginAttempts = jpaUser.numLoginAttempts;
+        }
+
+        public Builder(String email, String password) {
+            this.email = email;
             this.password = password;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
         }
 
         public Builder isAccountNonExpired(boolean isAccountNonExpired) {
@@ -161,15 +188,21 @@ public class JpaUser {
             return this;
         }
 
-        public Builder createdAt(Instant createdAt) {
-            this.createdAt = Timestamp.from(createdAt);
-            return this;
-        }
-
         public Builder updatedAt(Instant updatedAt) {
             this.updatedAt = Timestamp.from(updatedAt);
             return this;
         }
+
+        public Builder lastLogin(Instant lastLogin) {
+            this.lastLogin = Timestamp.from(lastLogin);
+            return this;
+        }
+
+        public Builder numLoginAttempts(int numLoginAttempts) {
+            this.numLoginAttempts = numLoginAttempts;
+            return this;
+        }
+
 
         public Builder roles(HashSet<Role> roles) {
             this.roles.addAll(roles);
@@ -183,7 +216,7 @@ public class JpaUser {
         }
 
         private void validateUserObject(JpaUser user) {
-            Assert.hasText(user.username, "username cant not be null or empty");
+            Assert.hasText(user.email, "email cant not be null or empty");
             Assert.hasText(user.password, "password cant not be null or empty");
         }
     }

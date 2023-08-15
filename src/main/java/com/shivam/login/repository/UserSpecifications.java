@@ -25,7 +25,7 @@ public class UserSpecifications {
 
         @Override
         public Predicate toPredicate(Root<JpaUser> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-            return criteriaBuilder.like(root.get(JpaUser_.USERNAME), "%" + name + "%");
+            return criteriaBuilder.like(root.get(JpaUser_.EMAIL), "%" + name + "%");
         }
     }
 
@@ -40,7 +40,7 @@ public class UserSpecifications {
 
         @Override
         public Predicate toPredicate(Root<JpaUser> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-            return criteriaBuilder.equal(root.get(JpaUser_.USERNAME), name);
+            return criteriaBuilder.equal(root.get(JpaUser_.EMAIL), name);
         }
     }
 
@@ -78,18 +78,18 @@ public class UserSpecifications {
         }
     }
 
-    public static class DeleteByUsernameSpec implements Specification<JpaUser> {
+    public static class DeleteByEmailSpec implements Specification<JpaUser> {
         @Serial
         private static final long serialVersionUID = 7893286417970897700L;
-        private final String username;
+        private final String email;
 
-        public DeleteByUsernameSpec(String username) {
-            this.username = username;
+        public DeleteByEmailSpec(String email) {
+            this.email = email;
         }
 
         @Override
         public Predicate toPredicate(Root<JpaUser> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-            return criteriaBuilder.equal(root.get(JpaUser_.USERNAME), username);
+            return criteriaBuilder.equal(root.get(JpaUser_.EMAIL), email);
         }
     }
 }

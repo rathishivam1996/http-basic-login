@@ -3,20 +3,24 @@ package com.shivam.login.service;
 import com.shivam.login.model.JpaUser;
 import com.shivam.login.repository.GenericSpecification;
 import com.shivam.login.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements IUserService {
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public JpaUser saveUser(JpaUser user) {
@@ -25,15 +29,6 @@ public class UserServiceImpl implements IUserService {
         log.info("saved: {}", user);
 
         return found;
-    }
-
-    @Override
-    public Iterable<JpaUser> saveAll(Iterable<JpaUser> users) {
-        log.info("Save users: {}", users);
-        Iterable<JpaUser> saved = userRepository.saveAll(users);
-        log.info("saved users: {}", saved);
-
-        return saved;
     }
 
     @Override
@@ -46,9 +41,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Optional<JpaUser> findByUsername(String username) {
-        log.info("find by username: " + username);
-        Specification<JpaUser> nameEqual = GenericSpecification.attributeEqual("username", username);
+    public Optional<JpaUser> findByEmail(String email) {
+        log.info("find by email: " + email);
+        Specification<JpaUser> nameEqual = GenericSpecification.attributeEqual("email", email);
         Optional<JpaUser> found = userRepository.findOne(nameEqual);
         log.info("found: {}", found);
 
@@ -56,92 +51,22 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<JpaUser> findByUsernameLike(String username) {
-        Specification<JpaUser> usernameLikeSpec = GenericSpecification.attributeContains("username", username);
-        return userRepository.findAll(usernameLikeSpec);
+    public JpaUser updatePasswordById(String uuid, String newPassword) {
+        JpaUser found = userRepository.findById(uuid).orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+
+        JpaUser clone = new JpaUser.Builder(found).password(newPassword).lastLogin(Instant.now()).build();
+        return userRepository.save(clone);
     }
 
-    @Override
-    public List<JpaUser> findByCreatedAtBetween(Instant from, Instant to) {
-        log.info("find by createdAtBetween: from {} to {}", from, to);
-        Specification<JpaUser> createdBetweenSpec = GenericSpecification.attributeBetween("createdAt", from, to);
-        List<JpaUser> found = userRepository.findAll(createdBetweenSpec);
-        log.info("found: {}", found);
-
-        return found;
-    }
 
     @Override
-    public List<JpaUser> findByUpdatedAtBetween(Instant from, Instant to) {
-        log.info("find by updatedAtBetween: from {} to {}", from, to);
-        Specification<JpaUser> updatedBetweenSpec = GenericSpecification.attributeBetween("updatedAt", from, to);
-        List<JpaUser> found = userRepository.findAll(updatedBetweenSpec);
-        log.info("found: {}", found);
-
-        return found;
-    }
-
-    @Override
-    public List<JpaUser> findAll() {
-        log.info("find all");
-        List<JpaUser> found = userRepository.findAll();
-        log.info("found: {}", found);
-
-        return found;
-    }
-
-    @Override
-    public JpaUser updateUserById(String uuid, JpaUser user) {
-        Optional<JpaUser> found = userRepository.findById(uuid);
-        if (found.isPresent()) {
-            found.get().setUsername(user.getUsername());
-            found.get().setPassword(user.getPassword());
-            found.get().setCreatedAt(user.getCreatedAt());
-            found.get().setUpdatedAt(user.getUpdatedAt());
-            found.get().setEnabled(user.isEnabled());
-            found.get().setAccountNonExpired(user.isAccountNonExpired());
-            found.get().setAccountNonLocked(user.isAccountNonLocked());
-            found.get().setCredentialsNonExpired(user.isCredentialsNonExpired());
-
-            return userRepository.save(found.get());
-        } else {
-            return userRepository.save(user);
-        }
-    }
-
-    @Override
-    public JpaUser updateUserByUsername(String username, JpaUser user) {
-        Specification<JpaUser> usernameEqualSpec = GenericSpecification.attributeEqual("username", username);
-        Optional<JpaUser> found = userRepository.findOne(usernameEqualSpec);
-        if (found.isPresent()) {
-            found.get().setUsername(user.getUsername());
-            found.get().setPassword(user.getPassword());
-            found.get().setCreatedAt(user.getCreatedAt());
-            found.get().setUpdatedAt(user.getUpdatedAt());
-            found.get().setEnabled(user.isEnabled());
-            found.get().setAccountNonExpired(user.isAccountNonExpired());
-            found.get().setAccountNonLocked(user.isAccountNonLocked());
-            found.get().setCredentialsNonExpired(user.isCredentialsNonExpired());
-
-            return saveUser(found.get());
-        } else {
-            return saveUser(user);
-        }
-    }
-
-    @Override
-    public void deleteById(String uuid) {
+    public void deleteByUuid(String uuid) {
         userRepository.deleteById(uuid);
     }
 
-    @Override
-    public void deleteByUsername(String username) {
-        Specification<JpaUser> usernameEqualSpec = GenericSpecification.attributeEqual("username", username);
-        userRepository.delete(usernameEqualSpec);
-    }
-
-    @Override
-    public void deleteAll() {
-        userRepository.deleteAll();
-    }
+//    @Override
+//    public void deleteByEmail(String email) {
+//        Specification<JpaUser> emailEqualSpec = GenericSpecification.attributeEqual("email", email);
+//        userRepository.delete(emailEqualSpec);
+//    }
 }

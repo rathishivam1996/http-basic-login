@@ -36,7 +36,7 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return jpaUser.getUsername();
+        return jpaUser.getEmail();
     }
 
     @Override

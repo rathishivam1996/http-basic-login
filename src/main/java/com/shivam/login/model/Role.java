@@ -20,6 +20,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "roles")
 public class Role implements GrantedAuthority {
+    // Non-Nullable fields
     @Serial
     private static final long serialVersionUID = 3150925864178103846L;
 
@@ -28,11 +29,8 @@ public class Role implements GrantedAuthority {
     @Column(name = "uuid")
     private final String uuid;
 
-    @Getter
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "roles_authorities", joinColumns = @JoinColumn(name = "role_uuid", referencedColumnName = "uuid"), inverseJoinColumns = @JoinColumn(name = "authority_uuid", referencedColumnName = "uuid"))
-    @Column(name = "allowedAuthorities", nullable = true)
-    private final Set<Authority> allowedAuthorities;
+    @Column(name = "authority", unique = true, nullable = false)
+    private String authority;
 
     @Getter
     @Column(name = "create_on", nullable = false)
@@ -43,8 +41,12 @@ public class Role implements GrantedAuthority {
     @Column(name = "optLock", columnDefinition = "integer DEFAULT 0", nullable = false)
     private int optLock;
 
-    @Column(name = "authority")
-    private String authority;
+    // Nullable fields
+    @Getter
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "roles_authorities", joinColumns = @JoinColumn(name = "role_uuid", referencedColumnName = "uuid"), inverseJoinColumns = @JoinColumn(name = "authority_uuid", referencedColumnName = "uuid"))
+    @Column(name = "allowedAuthorities")
+    private final Set<Authority> allowedAuthorities;
 
     public Role() {
         this.uuid = UUID.randomUUID().toString();
